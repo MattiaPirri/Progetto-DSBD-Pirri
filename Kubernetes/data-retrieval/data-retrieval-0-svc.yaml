@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: data-retrieval
+spec:
+  selector:
+    app: data-retrieval
+  type: NodePort
+  ports:
+  - port: 5000
+    targetPort: 5000
+    nodePort: 31000

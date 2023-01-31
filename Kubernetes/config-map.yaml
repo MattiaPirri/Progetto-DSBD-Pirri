@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dsbd-map
+data:
+  kafka_topic: "prometheusdata"
+  prometheus: "15.160.61.227"
+  prometheus_port: "29090"
+  kafka_broker: "crs-kafka-0.kafka-cluster.default.svc.cluster.local:9092,crs-kafka-1.kafka-cluster.default.svc.cluster.local:9092,crs-kafka-2.kafka-cluster.default.svc.cluster.local:9092"
+  #TODO mongo_server: "mongo-0.mongo.default.svc.cluster.local:27017,mongo-1.mongo.default.svc.cluster.local:27017,mongo-2.mongo.default.svc.cluster.local:27017/test_db?authSource=admin&retryWrites=true&w=majority" #/?replicaSet=rs0" 
+  mongo_server: "mongodb-0.mongodb.default.svc.cluster.local:27017"

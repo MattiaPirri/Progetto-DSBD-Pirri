@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sla-manager-grpc
+spec:
+  selector:
+    app: sla-manager
+  type: NodePort
+  ports:
+  - port: 50052
+    targetPort: 50052
+    nodePort: 31052
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sla-manager
+spec:
+  selector:
+    app: sla-manager
+  type: NodePort
+  ports:
+  - port: 5000
+    targetPort: 5000
+    nodePort: 31001

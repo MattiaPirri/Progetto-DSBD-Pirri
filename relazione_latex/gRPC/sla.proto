@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package sla;
+
+service SlaService {
+    rpc GetSLASet (SLARequest) returns (stream SLASetResponse) {}
+}
+
+message SLARequest {
+
+}
+
+message SLASetResponse {
+    map <string, string> metric = 1;
+    message Seasonality {
+        uint32 add = 1;
+        uint32 mul = 2;
+    }
+    optional Seasonality seasonality = 2;
+}

@@ -1,0 +1,23 @@
+\subsection{Build}
+\subsubsection{Make}
+Nel caso in cui si volesse usare make, basterà eseguire il seguente comando dalla directory contenente il progetto:
+\begin{lstlisting}[language=bash]
+    $ make build
+\end{lstlisting}
+verranno create in automatico tutte le immagini custom necessarie per il progetto.
+\subsubsection{Manual build}
+Per eseguire manualmente il build delle immagini eseguire i quattro comandi sotto elencati dalla directory contenente il progetto:
+\begin{lstlisting}[language=bash]
+  $ docker build -t etl-data-pipeline ./Etl\ Data\ Pipeline
+\end{lstlisting}
+\begin{lstlisting}[language=bash]
+  $ docker build -t data-retrieval ./Data\ Retrieval
+\end{lstlisting}
+
+\begin{lstlisting}[language=bash]
+  $ docker build -t data-storage ./Data\ Storage
+\end{lstlisting}
+
+\begin{lstlisting}[language=bash]
+  $ docker build -t sla-manager ./SLA\ Manager
+\end{lstlisting}

@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: etl-deployment
+  labels:
+    app: etl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: etl
+  template:
+    metadata:
+      labels:
+        app: etl
+    spec:
+      containers:
+      - name: etl
+        image: etl-data-pipeline
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8008
+        env:
+          - name: "PROMETHEUS"
+            valueFrom:
+              configMapKeyRef:
+                name: dsbd-map
+                key: prometheus
+          - name: PROMETHEUS_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: dsbd-map
+                key: prometheus_port
+          - name: KAFKA_BROKER
+            valueFrom:
+              configMapKeyRef:
+                name: dsbd-map
+                key: kafka_broker
+          - name: KAFKA_TOPIC
+            valueFrom:
+              configMapKeyRef:
+                name: dsbd-map
+                key: kafka_topic
+          - name: GRPC_PORT
+            value: "50052"
+          - name: GRPC_SERVER
+            value: sla-manager-grpc
+        #command: ["python", "ETL.py"] #TODO 
+      initContainers:
+        - name: create-topic
+          image: bitnami/kafka:2.6.0  
+          command:
+            - bin/sh
+            - -c
+            - "/opt/bitnami/kafka/bin/kafka-topics.sh --create --replication-factor 3 --partitions 4 --topic prometheusdata --bootstrap-server crs-kafka-0.kafka-cluster:9092,crs-kafka-1.kafka-cluster:9092,crs-kafka-0.kafka-cluster:9092 --if-not-exists --config min.insync.replicas=2"

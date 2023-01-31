@@ -1,0 +1,9 @@
+global:
+  scrape_interval:     60s
+  evaluation_interval: 60s
+
+scrape_configs:
+- job_name: etl_data_pipeline
+  static_configs:
+  - targets:
+    - etl:8008

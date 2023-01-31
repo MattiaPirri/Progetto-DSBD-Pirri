@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data-retrieval
+spec:
+  selector:
+    matchLabels:
+      app: data-retrieval
+  template:
+    metadata:
+      labels:
+        app: data-retrieval
+    spec:
+      containers:
+      - name: data-retrieval
+        image: data-retrieval
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5000
+        env:
+          - name: MONGO_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: mongo-creds
+                key: username
+          - name: MONGO_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mongo-creds
+                key: password
+          - name: MONGO_SERVER
+            valueFrom:
+              configMapKeyRef:
+                name: dsbd-map
+                key: mongo_server

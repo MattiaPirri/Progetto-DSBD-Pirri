@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sla-manager
+  labels:
+    app: sla-manager
+spec:
+  selector:
+    matchLabels:
+      app: sla-manager
+  template:
+    metadata:
+      labels:
+        app: sla-manager
+    spec:
+      containers:
+      - name: sla-manager
+        image: sla-manager  
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5000
+        - containerPort: 50052
+        env:
+        - name: GRPC_PORT
+          value: "50052"
+        - name: MONGO_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mongo-creds
+              key: username
+        - name: MONGO_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongo-creds
+              key: password
+        - name: MONGO_SERVER
+          valueFrom:
+            configMapKeyRef:
+              name: dsbd-map
+              key: mongo_server
+        - name: "PROMETHEUS"
+          valueFrom:
+            configMapKeyRef:
+              name: dsbd-map
+              key: prometheus
+        - name: PROMETHEUS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: dsbd-map
+              key: prometheus_port
+        

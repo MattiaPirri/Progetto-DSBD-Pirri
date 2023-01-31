@@ -1,0 +1,242 @@
+\paragraph{QUERY get SLA Set}
+    \begin{apiRoute}{get}{/slaset}{fornisce l'SLA set}
+    	\begin{routeParameter}
+    		\noRouteParameter{no parameter}
+    	\end{routeParameter}
+    	\begin{routeResponse}{application/json}
+    		\begin{routeResponseItem}{200}{OK}
+    			\begin{routeResponseItemBody}
+[
+    {
+        "_id": {
+            "$oid": "63d1206fd124ee3315cfe886"
+        },
+        "name": {
+            "__name__": "node_filesystem_avail_bytes",
+            "device": "tmpfs",
+            "fstype": "tmpfs",
+            "instance": "node-exporter:9100",
+            "job": "host",
+            "mountpoint": "/run"
+        },
+        "range": {
+            "min": 3289686016,
+            "max": 3290595328
+        },
+        "for": 1
+    },
+    ...
+]      
+    			\end{routeResponseItemBody}
+    		\end{routeResponseItem}
+    		\begin{routeResponseItem}{504}{error: Gateway Timeout}
+    			\begin{routeResponseItemBody}
+DB not available
+    			\end{routeResponseItemBody}
+    		\end{routeResponseItem}
+    	\end{routeResponse}
+    \end{apiRoute}
+\newpage
+\paragraph{CREATE/UPDATE dell'SLA }
+    \begin{apiRoute}{put}{/slaset}{aggiorna o crea l'SLA set}
+    	\begin{routeRequest}{application/json}
+    		\begin{routeRequestBody}
+[ 
+    {     
+        "name": {
+            "__name__": "node_filesystem_avail_bytes",
+            ... 
+            "mountpoint": "/run"
+        },
+        "range": { "min": 328, "max": 3290595},
+        "for": 5
+    },
+    ...
+]
+    		\end{routeRequestBody}
+    	\end{routeRequest}
+    	\begin{routeResponse}{text/html}
+    		\begin{routeResponseItem}{200}{OK}
+    			\begin{routeResponseItemBody}
+SLA set updated
+    			\end{routeResponseItemBody}
+    		\end{routeResponseItem}
+                \begin{routeResponseItem}{201}{Created}
+    			\begin{routeResponseItemBody}
+SLA set created
+    			\end{routeResponseItemBody}
+    		\end{routeResponseItem}              
+                \begin{routeResponseItem}{400}{error: Bad request}
+    			\begin{routeResponseItemBody}
+SLA set must consist of 5 metrics. {} provided
+- The metric {} does not exists;
+- Minimum value of range not provided for {};
+- Maximum value of range not provided for {};
+- Invalid range provided [minimum given value ({}) is greater than maximum one ({})] for {};
+- Range not provided for {};
+- Invalid duration (for key) provided for {};
+- Duration (for key) not provided for {};
+    			\end{routeResponseItemBody}
+    		\end{routeResponseItem}
+                \begin{routeResponseItem}{500}{error: Internal Server Error}
+    			\begin{routeResponseItemBody}
+Error on db
+    			\end{routeResponseItemBody}
+    		\end{routeResponseItem}
+                \begin{routeResponseItem}{504}{error: Gateway Timeout}
+    			\begin{routeResponseItemBody}
+DB not available
+    			\end{routeResponseItemBody}
+    		\end{routeResponseItem}
+    	\end{routeResponse}
+    \end{apiRoute}
+
+
+
+\paragraph{QUERY dello stato dell’SLA}
+\begin{apiRoute}{get}{/status}{ritorna lo stato dell'SLA. Il campo \textbf{description} può essere (in funzione dello stato): 
+            \begin{itemize}
+                \item \textbf{inactive}: Actual value [\{\}] in (\{\}, \{\})
+                \item \textbf{pending}: Service level agreement violated for \{\}/\{\} min (\{\%\}), last three values [\{\},\{\},\{\}] not in (\{\}, \{\})
+                \item \textbf{firing}: Service level agreement violated for more than \{\} min, last three values \{\}, allowed range: (\{\}, \{\})
+            \end{itemize}
+        }
+    	\begin{routeParameter}
+    		\noRouteParameter{no parameter}
+    	\end{routeParameter}
+    	\begin{routeResponse}{application/json}
+    		\begin{routeResponseItem}{200}{OK}
+    			\begin{routeResponseItemBody}
+[
+    {
+        "name": {
+            "device": "tmpfs",
+            "fstype": "tmpfs",
+            "instance": "node-exporter:9100",
+            "job": "host",
+            "mountpoint": "/run"
+        },
+        "status": "inactive",
+        "description": "Actual value [3289706496.0] in (3289686016, 3290595328)",
+        "last-values": [
+            3289759744.0,
+            3289731072.0,
+            3289706496.0
+        ]
+    },
+    ...
+]     
+    			\end{routeResponseItemBody}
+    		\end{routeResponseItem}
+    		\begin{routeResponseItem}{504}{error: Gateway Timeout}
+    			\begin{routeResponseItemBody}
+DB not available
+    			\end{routeResponseItemBody}
+    		\end{routeResponseItem}
+    	\end{routeResponse}
+    	
+    \end{apiRoute}
+
+\newpage
+\paragraph{QUERY del numero di violazioni nelle ultime 1, 3, 12 ore}
+    \begin{apiRoute}{get}{/violations}{ritorna il numero di violazioni nelle ultime 1, 3 e 12 ore. Ritorna inoltre per ognuna delle fasce il tempo totale di violazione, e una lista di tutte le violazioni nelle ultime 12 ore}
+    	\begin{routeResponse}{application/json}
+    		\begin{routeResponseItem}{200}{OK}
+    			\begin{routeResponseItemBody}
+[
+    {
+        "name": {
+            "device": "/dev/vda1",
+            "fstype": "ext4",
+            "instance": "node_exporter:9100",
+            "job": "node",
+            "mountpoint": "/etc/resolv.conf"
+        },
+        "1h": {
+            "n": 1, "time": 60.0
+        },
+        "3h": {
+            "n": 1, "time": 76.0
+        },
+        "12h": {
+            "n": 1, "time": 76.0
+        },
+        "violation_list": [
+            {
+                "start_time": "2023-01-23 10:14:24",
+                "end_time": "2023-01-23 11:30:24",
+                "duration": 76.0,
+                "avg_value": 39738415265.68421,
+                "max_value": 40542871552.0,
+                "min_value": 37894434816.0
+            }
+        ]
+    }
+    ...
+]  
+    			\end{routeResponseItemBody}
+    		\end{routeResponseItem}
+                \begin{routeResponseItem}{400}{error: Bad request}
+    			\begin{routeResponseItemBody}
+SLA set not defined
+    			\end{routeResponseItemBody}
+    		\end{routeResponseItem}
+    		\begin{routeResponseItem}{504}{error: Gateway Timeout}
+    			\begin{routeResponseItemBody}
+DB not available
+    			\end{routeResponseItemBody}
+    		\end{routeResponseItem}
+    	\end{routeResponse}
+    	
+    \end{apiRoute}
+
+\paragraph{QUERY su possibili violazioni future dell’SLA}
+    \begin{apiRoute}{get}{/future-violations}{Ritorna la lista delle possibili violazioni nei futuri 10 minuti, per ogni metrica appartenente al set. Per ogni violazione viene riportato: il timestamp di inizio e fine violazione, la durata, i valori max, avg e min e una descrizione che puo essere: 
+    \begin{itemize}[nosep]
+        %\setlength\itemsep{0em}
+        \item Was already firing, continuing firing
+        \item Was pending, will fire
+        \item Will fire
+        \item Will be pending      
+    \end{itemize} }
+    	\begin{routeResponse}{application/json}
+    		\begin{routeResponseItem}{200}{OK}
+    			\begin{routeResponseItemBody}
+[
+    {
+        "name": { ... },
+        "error": "Prediction not available"
+    },
+    ...,
+    {
+        "name": { ... },
+        "violations": [
+            {
+               "start_time": "2023-01-25 12:12:53",
+               "end_time": "2023-01-25 12:24:00",
+               "duration": 12,
+               "description": "Was pending, will fire",
+               "avg_value": 11728352970.995926,
+               "max_value": 11757084672.0,
+               "min_value": 11704975159.982656
+            }
+        ],
+        "prediction_rmse": 118084489.44144112
+    }
+]
+    			\end{routeResponseItemBody}
+    		\end{routeResponseItem}
+                \begin{routeResponseItem}{504}{error: Gateway Timeout}
+    			\begin{routeResponseItemBody}
+DB not available
+    			\end{routeResponseItemBody}
+    		\end{routeResponseItem}
+    		\begin{routeResponseItem}{400}{error: Bad Request}
+    			\begin{routeResponseItemBody}
+SLA set not defined
+    			\end{routeResponseItemBody}
+    		\end{routeResponseItem}
+    	\end{routeResponse}
+    	
+    \end{apiRoute}
+    

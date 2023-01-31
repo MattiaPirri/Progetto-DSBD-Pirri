@@ -1,0 +1,151 @@
+---
+version: '2'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    container_name: zookeeper
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - 29092:29092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    container_name: kafka
+
+
+#  prometheus:
+#    image: prom/prometheus
+#    ports:
+#    - ${INTERNAL_PROMETHEUS_PORT}:9090 
+#    volumes:
+#    - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+  prometheus:
+    image: my-prometheus
+    build: ./prometheus/
+    ports:
+    - ${INTERNAL_PROMETHEUS_PORT}:9090
+
+
+    
+  # Per creare il topic 
+  init-kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - kafka
+    entrypoint: ['/bin/sh', '-c']
+    command: |
+      "
+      # Per aspettare che il broker kafka sia raggiungibile e pronto
+      kafka-topics --bootstrap-server kafka:9092 --list
+
+      echo -e 'Creo il topic prometheusdata'
+      kafka-topics --create --replication-factor 1 --partitions 1 --topic prometheusdata --bootstrap-server kafka:9092 --if-not-exists
+
+      echo -e 'Topic creato con successo!'
+      # Stampo la lista dei topic per vedere se è stato effettivamente creato
+      kafka-topics --bootstrap-server kafka:9092 --list
+      "
+    tty: true
+    stdin_open: true
+    container_name: init-kafka
+  
+  etl:
+    build: ./ETL Data Pipeline/
+    image: etl-data-pipeline
+    depends_on:
+      init-kafka:
+        condition: service_completed_successfully
+      sla-manager:
+        condition: service_started
+    ports:
+      - ${ETL_EXPORTER_PORT}:8008 
+    environment:
+      PROMETHEUS: ${PROMETHEUS}
+      PROMETHEUS_PORT: ${PROMETHEUS_PORT}
+      KAFKA_BROKER: ${KAFKA_BROKER}
+      KAFKA_TOPIC: ${KAFKA_TOPIC}
+      GRPC_PORT: ${GRPC_PORT}
+      GRPC_SERVER: ${GRPC_SERVER}
+    #command: ["python",  "/file/ETL.py"]
+    #volumes:
+    #  - "./ETL\ Data\ Pipeline/:/file/"
+    tty: true
+    stdin_open: true
+    container_name: etl
+
+  db:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    # Espongo la porta per connettermi con un client grafico
+    ports:
+      - ${MONGO_PORT}:27017
+    tty: true
+    stdin_open: true
+    container_name: db
+  
+  data-storage:
+    build: ./Data Storage/
+    image: data-storage
+    depends_on:
+      init-kafka:
+        condition: service_completed_successfully
+      db:
+        condition: service_started 
+    environment:
+      MONGO_USERNAME: ${MONGO_USERNAME}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_SERVER: ${MONGO_SERVER}
+      KAFKA_BROKER: ${KAFKA_BROKER}
+      KAFKA_TOPIC: ${KAFKA_TOPIC}
+    tty: true
+    stdin_open: true
+#    stop_signal: SIGINT messo nell'immagine
+    container_name: data-storage
+  
+  data-retrieval:
+    build: ./Data Retrieval/
+    image: data-retrieval
+    depends_on:
+      - db
+    environment:
+      MONGO_USERNAME: ${MONGO_USERNAME}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_SERVER: ${MONGO_SERVER}
+    ports:
+      - ${DATA_RETRIEVAL_PORT}:5000 
+    tty: true
+    stdin_open: true
+    container_name: data-retrieval
+
+  sla-manager:
+    build: ./SLA Manager/
+    image: sla-manager
+    depends_on:
+      - db
+    environment:
+      MONGO_USERNAME: ${MONGO_USERNAME}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_SERVER: ${MONGO_SERVER}
+      GRPC_PORT: ${GRPC_PORT}
+      PROMETHEUS: ${PROMETHEUS}
+      PROMETHEUS_PORT: ${PROMETHEUS_PORT}
+    ports:
+      - ${SLA_MANAGER_PORT}:5000
+      - ${GRPC_PORT}:${GRPC_PORT}
+    tty: true
+    stdin_open: true
+    container_name: ${GRPC_SERVER}

@@ -1,0 +1,77 @@
+[
+    {
+        "name": {
+            "__name__": "node_filesystem_avail_bytes",
+            "device": "/dev/sda2",
+            "fstype": "ext4",
+            "instance": "node-exporter:9100",
+            "job": "host",
+            "mountpoint": "/"
+        },
+        "range": {
+            "min": 2000000000,
+            "max": 99999999999999
+        },
+        "for": 4
+    },
+    {
+        "name": {
+            "__name__": "node_filesystem_avail_bytes",
+            "device": "tmpfs",
+            "fstype": "tmpfs",
+            "instance": "node-exporter:9100",
+            "job": "host",
+            "mountpoint": "/run"
+        },
+        "range": {
+            "min": 3200000000,
+            "max": 3500000000
+        },
+        "for": 3
+    },
+    {
+        "name": {
+            "__name__": "cpuTemp",
+            "instance": "111",
+            "job": "summary",
+            "nodeId": "111",
+            "nodeName": "invader-26",
+            "nodeUuid": "2d430e81-659b-11ed-9f6a-0242ac10001e"
+        },
+        "range": {
+            "min": -1,
+            "max": 75
+        },
+        "for": 2
+    },
+    {
+        "name": {
+            "__name__": "networkThroughput",
+            "instance": "107",
+            "job": "summary",
+            "nodeId": "107",
+            "nodeName": "sv67",
+            "nodeUuid": "75e4bdcf-659a-11ed-9f6a-0242ac10001e"
+        },
+        "range": {
+            "min": -1,
+            "max": 0.9
+        },
+        "for": 1
+    },
+    {
+        "name": {
+            "__name__": "diskUsage",
+            "instance": "108",
+            "job": "summary",
+            "nodeId": "108",
+            "nodeName": "i70",
+            "nodeUuid": "c22380bf-659a-11ed-9f6a-0242ac10001e"
+        },
+        "range": {
+            "min": -1,
+            "max": 80
+        },
+        "for": 5
+    }
+]
