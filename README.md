@@ -22,7 +22,7 @@ microservizi:
 
 -   ETL data pipeline: esegue due loop in parallelo:
 
-    -   il primo con periodo di **Y** min che si occupa di calcolare i
+    -   il primo con periodo di **2** min che si occupa di calcolare i
         valori statistici di aggregazione e di effettuare la predizione
         dei successivi 10 minuti per le metriche dell’SLA set.
 
@@ -132,6 +132,5 @@ Per eseguire manualmente la creazione dell’SLA set eseguire il comando
 curl:
 
 ``` bash
-curl --location --request PUT 'http://localhost:5001/slaset' \
---header "Content-Type: application/json" -d @sla_set.json 
+curl --location --request PUT 'http://localhost:5001/slaset' --header "Content-Type: application/json" -d @sla_set.json 
 ```
